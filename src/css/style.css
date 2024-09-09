@@ -241,3 +241,8 @@ input[type="search"]::-webkit-search-cancel-button {
 [x-cloak] {
     display: none !important;
 }
+
+.table-header-custome{
+    display: flex;
+    justify-content: space-between;
+}
