@@ -5,7 +5,7 @@ import { UnknownAction } from "redux";
 import { getProperty } from "../../redux/action/Property";
 import { RootState } from "../../redux/store";
 import Link from "next/link";
-import DataTable from "react-data-table-component";
+import DataTable, { TableColumn } from "react-data-table-component";
 const PropertyTable = () => {
   const dispatch = useDispatch();
   const propertyData: PropertyItem[] = useSelector(
@@ -55,7 +55,7 @@ const PropertyTable = () => {
     return formattedDate;
   }
 
-  const columns = [
+  const columns: TableColumn<PropertyItem>[] = [
     {
       name: "Property Name",
       selector: (row: { propertyName: any }) => row.propertyName,
@@ -68,7 +68,8 @@ const PropertyTable = () => {
     },
     {
       name: "Created At",
-      selector: (row: { createdAt: any }) => formatDate(row.createdAt),
+      selector: (row: { createdAt: any }) =>
+        row.createdAt ? formatDate(row.createdAt) : "N/A",
       sortable: true,
     },
     {
