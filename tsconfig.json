@@ -21,6 +21,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["type.d.ts","next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/components/Property/Property.jsx"],
+  "include": ["type.d.ts","next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/components/Property/Property.jsx", "src/redux/action/Login/index.js"],
   "exclude": ["node_modules"]
 }
