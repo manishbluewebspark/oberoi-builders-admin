@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 const PropertyForm = () => {
   const router = useRouter();
   const dispatch = useDispatch();
+  const [propertyImages, setPropertyImages] = useState([null]);
+  const [propertyVideos, setPropertyVideos] = useState([null]);
   const [formData, setFormData] = useState({
     propertyName: "",
     propertyType: "",
@@ -33,6 +35,8 @@ const PropertyForm = () => {
     emergencyContactInfo: "",
     activities: "",
     rules: "",
+    addresslat: "",
+    addressLong: "",
   });
 
   const handleChange = (e) => {
@@ -49,14 +53,49 @@ const PropertyForm = () => {
     });
   };
 
-  const handleFileChange = (e) => {
-    const { name, files } = e.target;
-    setFormData({
-      ...formData,
-      [name]: files,
-    });
+  // const handleFileChange = (e) => {
+  //   const { name, files } = e.target;
+  //   setFormData({
+  //     ...formData,
+  //     [name]: files,
+  //   });
+  // };
+  const handleImageChange = (index, e) => {
+    const files = e.target.files;
+    const updatedImages = [...propertyImages];
+    updatedImages[index] = files; // Store files for the specific input
+    setPropertyImages(updatedImages);
   };
 
+  // Handle file change for videos
+  const handleVideoChange = (index, e) => {
+    const files = e.target.files;
+    const updatedVideos = [...propertyVideos];
+    updatedVideos[index] = files; // Store files for the specific input
+    setPropertyVideos(updatedVideos);
+  };
+
+  // Add a new input field for images
+  const addMoreImages = () => {
+    setPropertyImages((prev) => [...prev, null]); // Add a new null element for the new input
+  };
+
+  // Remove an input field for images
+  const removeImageInput = (index) => {
+    const updatedImages = propertyImages.filter((_, i) => i !== index); // Remove input at the specified index
+    setPropertyImages(updatedImages);
+  };
+
+  // Add a new input field for videos
+  const addMoreVideos = () => {
+    setPropertyVideos((prev) => [...prev, null]); // Add a new null element for the new input
+  };
+
+  // Remove an input field for videos
+  const removeVideoInput = (index) => {
+    const updatedVideos = propertyVideos.filter((_, i) => i !== index); // Remove input at the specified index
+    setPropertyVideos(updatedVideos);
+  };
   // const handleSubmit = (e) => {
   //   e.preventDefault();
   //   const data = new FormData();
@@ -87,16 +126,30 @@ const PropertyForm = () => {
       data.append("amenities", jsonString);
     }
     // Append property images
-    if (formData.propertyImages) {
-      Array.from(formData.propertyImages).forEach((file) => {
-        data.append("propertyImages", file);
+    if (propertyImages) {
+      // Array.from(propertyImages).forEach((file) => {
+      //   data.append("propertyImages", file);
+      // });
+      propertyImages.forEach((files) => {
+        if (files) {
+          for (let i = 0; i < files.length; i++) {
+            data.append("propertyImages", files[i]); // Append each file
+          }
+        }
       });
     }
 
     // Append video files
-    if (formData.videoFiles) {
-      Array.from(formData.videoFiles).forEach((file) => {
-        data.append("videoFiles", file);
+    if (propertyVideos) {
+      // Array.from(propertyVideos).forEach((file) => {
+      //   data.append("videoFiles", file);
+      // });
+      propertyVideos.forEach((files) => {
+        if (files) {
+          for (let i = 0; i < files.length; i++) {
+            data.append("videoFiles", files[i]); // Append each file
+          }
+        }
       });
     }
 
@@ -139,6 +192,29 @@ const PropertyForm = () => {
             type="text"
             name="location"
             value={formData.location}
+            onChange={handleChange}
+            className="w-full rounded border px-3 py-2"
+            required
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="text-gray-700 block">Address lat :</label>
+          <input
+            type="text"
+            name="addresslat"
+            value={formData.addresslat}
+            onChange={handleChange}
+            className="w-full rounded border px-3 py-2"
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label className="text-gray-700 block">Address Long:</label>
+          <input
+            type="text"
+            name="addressLong"
+            value={formData.addressLong}
             onChange={handleChange}
             className="w-full rounded border px-3 py-2"
             required
@@ -263,7 +339,7 @@ const PropertyForm = () => {
             required
           />
         </div>
-        <div className="mb-4 md:col-span-3">
+        {/* <div className="mb-4 md:col-span-3">
           <label className="text-gray-700 block">Property Images:</label>
           <input
             type="file"
@@ -273,20 +349,77 @@ const PropertyForm = () => {
             multiple
             required
           />
+        </div> */}
+
+        <div className="mb-4 md:col-span-3">
+          <label className="text-gray-700 block">Property Images:</label>
+          {propertyImages.map((_, index) => (
+            <div key={index} className="mb-2 flex items-center">
+              <input
+                type="file"
+                onChange={(e) => handleImageChange(index, e)}
+                className="w-full rounded border px-3 py-2"
+                multiple
+                required
+              />
+              <button
+                type="button"
+                onClick={() => removeImageInput(index)}
+                className="text-red-600 hover:text-red-800 ml-2"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addMoreImages}
+            className="mt-2 rounded bg-blue-500 px-4 py-2 text-white"
+          >
+            Add More
+          </button>
         </div>
       </div>
 
       <h2 className="mb-4 mt-6 text-xl font-bold">Video Content</h2>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <div className="mb-4 md:col-span-3">
-          <label className="text-gray-700 block">Video Files:</label>
-          <input
+          {/* <label className="text-gray-700 block">Video Files:</label> */}
+          {/* <input
             type="file"
             name="videoFiles"
             onChange={handleFileChange}
             className="w-full rounded border px-3 py-2"
             multiple
-          />
+          /> */}
+          <div className="mb-4 md:col-span-3">
+            <label className="text-gray-700 block">Property Videos:</label>
+            {propertyVideos.map((_, index) => (
+              <div key={index} className="mb-2 flex items-center">
+                <input
+                  type="file"
+                  onChange={(e) => handleVideoChange(index, e)}
+                  className="w-full rounded border px-3 py-2"
+                  multiple
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => removeVideoInput(index)}
+                  className="text-red-600 hover:text-red-800 ml-2"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addMoreVideos}
+              className="mt-2 rounded bg-blue-500 px-4 py-2 text-white"
+            >
+              Add More Videos
+            </button>
+          </div>
         </div>
         <div className="mb-4 md:col-span-3">
           <label className="text-gray-700 block">YouTube Links:</label>
