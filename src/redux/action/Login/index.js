@@ -2,22 +2,21 @@ import axios from "axios";
 import { Dispatch } from "redux";
 import { userProfileData } from "../../reducer/Login";
 import showToaster from "../../../components/Toaster/Toaster";
+import { toast } from "react-toastify";
 export const postRegistration = (data, router) => async () => {
   await axios
     .post(`${process.env.NEXT_PUBLIC_API_URL}/user`, data)
     .then((response) => {
       router.push("/signin");
-      showToaster("success", "Your Account Has Been Created Successfully");
+
+      toast.success("Your Account Has Been Created Successfully");
     })
     .catch((err) => {
-      showToaster(
-        "error",
+      toast.error(
         err?.response?.data?.message
           ? err?.response?.data?.message
           : "Something Went Wrong",
       );
-
-      console.warn("Something Went Wrong");
     });
 };
 
@@ -26,7 +25,8 @@ export const postLogin = (data, router) => async (dispatch) => {
     .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, data)
     .then((response) => {
       dispatch(userProfileData(response.data));
-      showToaster("success", "Logged In Successfully");
+
+      toast.success("Logged In Successfully");
       response?.data?.role === 1
         ? router.push("/dashboard")
         : response?.data?.role === 3
@@ -34,13 +34,10 @@ export const postLogin = (data, router) => async (dispatch) => {
           : router.push("/");
     })
     .catch((err) => {
-      showToaster(
-        "error",
+      toast.error(
         err?.response?.data?.message
           ? err?.response?.data?.message
           : "Something Went Wrong",
       );
-
-      console.warn("Something Went Wrong", err);
     });
 };

@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation"; // Import useRouter from Next.js
 import { UnknownAction } from "redux";
 import { getProperty, deleteProperty } from "../../redux/action/Property";
 import { RootState } from "../../redux/store";
@@ -10,12 +11,14 @@ import ConfirmationModal from "./ConfirmationModal"; // Import the modal compone
 
 const PropertyTable = () => {
   const dispatch = useDispatch();
-  const propertyData: PropertyItem[] = useSelector(
+  const router = useRouter(); // Initialize useRouter for navigation
+  const propertyData: any = useSelector(
     (state: RootState) => state?.property.propertyData,
   );
   const userData = useSelector((state: RootState) => state?.login?.userData);
   const [totalRows, setTotalRows] = useState(30);
   const [perPage, setPerPage] = useState(10);
+  const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
   const [propertyIdToDelete, setPropertyIdToDelete] = useState<string | null>(
@@ -23,29 +26,26 @@ const PropertyTable = () => {
   ); // ID to delete
 
   useEffect(() => {
-    dispatch(getProperty() as unknown as UnknownAction);
+    dispatch(getProperty(1, perPage) as unknown as UnknownAction);
   }, [dispatch]);
 
   const handlePageChange = (page: number) => {
-    dispatch(getProperty() as unknown as UnknownAction);
+    setPage(page);
+    dispatch(getProperty(page, perPage) as unknown as UnknownAction);
   };
 
   const handlePerRowsChange = async (newPerPage: number, page: number) => {
     setPerPage(newPerPage);
-    dispatch(getProperty() as unknown as UnknownAction);
+    dispatch(getProperty(page, newPerPage) as unknown as UnknownAction);
   };
 
   const handleAction1 = (id: string) => {
-    console.log("Action 1 for ID:", id);
+    router.push(`/property/${id}`);
   };
 
   const handleAction2 = (id: string) => {
     setPropertyIdToDelete(id); // Set the ID for deletion
     setIsModalOpen(true); // Open the modal
-  };
-
-  const handleAction3 = (id: string) => {
-    console.log("Action 3 for ID:", id);
   };
 
   const confirmDelete = async () => {
@@ -56,7 +56,9 @@ const PropertyTable = () => {
       setPropertyIdToDelete(null); // Reset the ID
       setIsModalOpen(false); // Close the modal
       // Optionally refresh the property list
-      dispatch(getProperty() as unknown as UnknownAction);
+      console.log("page, perPage", page, perPage);
+
+      dispatch(getProperty(page, perPage) as unknown as UnknownAction);
     }
   };
 
@@ -138,11 +140,11 @@ const PropertyTable = () => {
       <div className="max-w-full overflow-x-auto">
         <DataTable
           columns={columns}
-          data={propertyData}
+          data={propertyData.data}
           progressPending={loading}
           pagination
           paginationServer
-          paginationTotalRows={totalRows}
+          paginationTotalRows={propertyData.total}
           paginationPerPage={perPage}
           onChangePage={handlePageChange}
           onChangeRowsPerPage={handlePerRowsChange}

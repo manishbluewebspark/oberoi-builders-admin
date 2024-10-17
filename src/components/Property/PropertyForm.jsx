@@ -1,14 +1,28 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { addProperty } from "../../redux/action/Property";
+import {
+  addProperty,
+  editProperty,
+  getPropertyById,
+} from "../../redux/action/Property";
 import { TagsInput } from "react-tag-input-component-2";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
+
 const PropertyForm = () => {
   const router = useRouter();
+  const params = useParams();
   const dispatch = useDispatch();
+  const propertyId = params?.id;
+
+  const [isEditMode, setIsEditMode] = useState(false);
   const [propertyImages, setPropertyImages] = useState([null]);
   const [propertyVideos, setPropertyVideos] = useState([null]);
+
+  // Track existing files
+  const [existingImages, setExistingImages] = useState([]);
+  const [existingVideos, setExistingVideos] = useState([]);
+
   const [formData, setFormData] = useState({
     propertyName: "",
     propertyType: "",
@@ -39,78 +53,71 @@ const PropertyForm = () => {
     addressLong: "",
   });
 
+  useEffect(() => {
+    if (propertyId) {
+      setIsEditMode(true);
+      dispatch(getPropertyById(propertyId))
+        .then((property) => {
+          setFormData({
+            ...formData,
+            ...property,
+            amenities: property.amenities || [],
+          });
+          setPropertyImages(property.propertyImages || []);
+          setPropertyVideos(property.videoFiles || []);
+          // Set existing files
+          setExistingImages(property.propertyImages || []);
+          setExistingVideos(property.videoFiles || []);
+        })
+        .catch((err) => console.error("Failed to load property:", err));
+    }
+  }, [propertyId]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-  const handleChangeTag = (value, name) => {
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData({ ...formData, [name]: value });
   };
 
-  // const handleFileChange = (e) => {
-  //   const { name, files } = e.target;
-  //   setFormData({
-  //     ...formData,
-  //     [name]: files,
-  //   });
-  // };
+  const handleChangeTag = (value, name) => {
+    setFormData({ ...formData, [name]: value });
+  };
+
   const handleImageChange = (index, e) => {
     const files = e.target.files;
     const updatedImages = [...propertyImages];
-    updatedImages[index] = files; // Store files for the specific input
+    updatedImages[index] = files;
     setPropertyImages(updatedImages);
   };
 
-  // Handle file change for videos
   const handleVideoChange = (index, e) => {
     const files = e.target.files;
     const updatedVideos = [...propertyVideos];
-    updatedVideos[index] = files; // Store files for the specific input
+    updatedVideos[index] = files;
     setPropertyVideos(updatedVideos);
   };
 
-  // Add a new input field for images
   const addMoreImages = () => {
-    setPropertyImages((prev) => [...prev, null]); // Add a new null element for the new input
+    setPropertyImages((prev) => [...prev, null]);
   };
 
-  // Remove an input field for images
   const removeImageInput = (index) => {
-    const updatedImages = propertyImages.filter((_, i) => i !== index); // Remove input at the specified index
+    const updatedImages = propertyImages.filter((_, i) => i !== index);
     setPropertyImages(updatedImages);
   };
 
-  // Add a new input field for videos
   const addMoreVideos = () => {
-    setPropertyVideos((prev) => [...prev, null]); // Add a new null element for the new input
+    setPropertyVideos((prev) => [...prev, null]);
   };
 
-  // Remove an input field for videos
   const removeVideoInput = (index) => {
-    const updatedVideos = propertyVideos.filter((_, i) => i !== index); // Remove input at the specified index
+    const updatedVideos = propertyVideos.filter((_, i) => i !== index);
     setPropertyVideos(updatedVideos);
   };
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   const data = new FormData();
-  //   for (const key in formData) {
-  //     data.append(key, formData[key]);
-  //   }
-  //   dispatch(addProperty(data, "userData?.access_token",router));
 
-  // };
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const data = new FormData();
 
-    // Append other form data
     for (const key in formData) {
       if (
         key !== "propertyImages" &&
@@ -120,41 +127,49 @@ const PropertyForm = () => {
         data.append(key, formData[key]);
       }
     }
+
     if (formData.amenities) {
       const jsonString = JSON.stringify(formData.amenities);
-
       data.append("amenities", jsonString);
     }
-    // Append property images
+
     if (propertyImages) {
-      // Array.from(propertyImages).forEach((file) => {
-      //   data.append("propertyImages", file);
-      // });
       propertyImages.forEach((files) => {
         if (files) {
-          for (let i = 0; i < files.length; i++) {
-            data.append("propertyImages", files[i]); // Append each file
+          if (typeof files === "object") {
+            for (let i = 0; i < files.length; i++) {
+              data.append("propertyImages", files[i]);
+            }
+          } else if (typeof files === "string") {
+            data.append("propertyImages", files);
           }
         }
       });
     }
 
-    // Append video files
     if (propertyVideos) {
-      // Array.from(propertyVideos).forEach((file) => {
-      //   data.append("videoFiles", file);
-      // });
       propertyVideos.forEach((files) => {
         if (files) {
-          for (let i = 0; i < files.length; i++) {
-            data.append("videoFiles", files[i]); // Append each file
+          if (typeof files === "object") {
+            for (let i = 0; i < files.length; i++) {
+              data.append("videoFiles", files[i]);
+            }
+          } else if (typeof files === "string") {
+            data.append("videoFiles", files);
           }
         }
       });
     }
 
-    // Dispatch the action with FormData
-    dispatch(addProperty(data, "userData?.access_token", router));
+    if (isEditMode) {
+      // Dispatch the editProperty action
+      dispatch(
+        editProperty(propertyId, data, "userData?.access_token", router),
+      );
+    } else {
+      // Dispatch the addProperty action
+      dispatch(addProperty(data, "userData?.access_token", router));
+    }
   };
 
   return (
@@ -162,7 +177,9 @@ const PropertyForm = () => {
       onSubmit={handleSubmit}
       className="mx-auto max-w-6xl rounded bg-white p-6 shadow-md"
     >
-      <h2 className="mb-4 text-xl font-bold">Basic Property Information</h2>
+      <h2 className="mb-4 text-xl font-bold">
+        {isEditMode ? "Edit Property" : "Add New Property"}
+      </h2>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <div className="mb-4">
           <label className="text-gray-700 block">Property Name:</label>
@@ -353,15 +370,22 @@ const PropertyForm = () => {
 
         <div className="mb-4 md:col-span-3">
           <label className="text-gray-700 block">Property Images:</label>
-          {propertyImages.map((_, index) => (
+          {propertyImages.map((item, index) => (
             <div key={index} className="mb-2 flex items-center">
               <input
                 type="file"
                 onChange={(e) => handleImageChange(index, e)}
                 className="w-full rounded border px-3 py-2"
                 multiple
-                required
               />
+              {isEditMode && existingImages[index] && (
+                <img
+                  src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/images/${existingImages[index]}`}
+                  width="100"
+                  height="100"
+                  alt="existing"
+                />
+              )}
               <button
                 type="button"
                 onClick={() => removeImageInput(index)}
@@ -394,15 +418,22 @@ const PropertyForm = () => {
           /> */}
           <div className="mb-4 md:col-span-3">
             <label className="text-gray-700 block">Property Videos:</label>
-            {propertyVideos.map((_, index) => (
+            {propertyVideos.map((item, index) => (
               <div key={index} className="mb-2 flex items-center">
                 <input
                   type="file"
                   onChange={(e) => handleVideoChange(index, e)}
                   className="w-full rounded border px-3 py-2"
                   multiple
-                  required
                 />
+                {isEditMode && existingVideos[index] && (
+                  <video
+                    src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/videos/${existingVideos[index]}`}
+                    controls={false}
+                    width="100"
+                    height="100"
+                  />
+                )}
                 <button
                   type="button"
                   onClick={() => removeVideoInput(index)}
@@ -528,7 +559,7 @@ const PropertyForm = () => {
         type="submit"
         className="w-full rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-700"
       >
-        Submit
+        {isEditMode ? "Update Property" : "Submit"}
       </button>
     </form>
   );

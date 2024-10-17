@@ -5,10 +5,11 @@ import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // Default local storage
 import loginSlice from "./reducer/Login/index";
 import propertySlice from "./reducer/Property/index";
-
+import userSlice from "./reducer/User/index";
 const rootReducer = combineReducers({
   login: loginSlice,
   property: propertySlice,
+  user: userSlice,
 });
 
 const persistConfig = {
