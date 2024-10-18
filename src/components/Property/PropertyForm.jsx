@@ -103,6 +103,9 @@ const PropertyForm = () => {
   const removeImageInput = (index) => {
     const updatedImages = propertyImages.filter((_, i) => i !== index);
     setPropertyImages(updatedImages);
+    if (isEditMode) {
+      setExistingImages(updatedImages);
+    }
   };
 
   const addMoreVideos = () => {
@@ -112,6 +115,9 @@ const PropertyForm = () => {
   const removeVideoInput = (index) => {
     const updatedVideos = propertyVideos.filter((_, i) => i !== index);
     setPropertyVideos(updatedVideos);
+    if (isEditMode) {
+      setExistingVideos(updatedVideos);
+    }
   };
 
   const handleSubmit = (e) => {
