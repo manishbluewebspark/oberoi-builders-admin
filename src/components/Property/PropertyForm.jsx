@@ -27,6 +27,7 @@ const PropertyForm = () => {
     propertyName: "",
     propertyType: "",
     location: "",
+    city: "",
     contactName: "",
     contactPhone: "",
     contactEmail: "",
@@ -221,6 +222,17 @@ const PropertyForm = () => {
           />
         </div>
 
+        <div className="mb-4">
+          <label className="text-gray-700 block">City:</label>
+          <input
+            type="text"
+            name="city"
+            value={formData.city}
+            onChange={handleChange}
+            className="w-full rounded border px-3 py-2"
+            required
+          />
+        </div>
         <div className="mb-4">
           <label className="text-gray-700 block">Address lat :</label>
           <input
