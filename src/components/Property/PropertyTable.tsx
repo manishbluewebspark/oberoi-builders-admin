@@ -18,7 +18,7 @@ const PropertyTable = () => {
   const userData = useSelector((state: RootState) => state?.login?.userData);
   const [totalRows, setTotalRows] = useState(30);
   const [perPage, setPerPage] = useState(10);
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
   const [propertyIdToDelete, setPropertyIdToDelete] = useState<string | null>(
