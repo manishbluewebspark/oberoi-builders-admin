@@ -14,7 +14,7 @@ const PropertyForm = () => {
   const params = useParams();
   const dispatch = useDispatch();
   const propertyId = params?.id;
-
+  const [file, setFile] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [propertyImages, setPropertyImages] = useState([null]);
   const [propertyVideos, setPropertyVideos] = useState([null]);
@@ -52,6 +52,9 @@ const PropertyForm = () => {
     rules: "",
     addresslat: "",
     addressLong: "",
+    instagramLink: "",
+    facebookLink: "",
+    youtubeChannelLink: "",
   });
 
   useEffect(() => {
@@ -64,6 +67,7 @@ const PropertyForm = () => {
             ...property,
             amenities: property.amenities || [],
           });
+
           setPropertyImages(property.propertyImages || []);
           setPropertyVideos(property.videoFiles || []);
           // Set existing files
@@ -168,6 +172,9 @@ const PropertyForm = () => {
       });
     }
 
+    if (file !== null) {
+      data.append("ownerImages", file);
+    }
     if (isEditMode) {
       // Dispatch the editProperty action
       dispatch(
@@ -178,7 +185,9 @@ const PropertyForm = () => {
       dispatch(addProperty(data, "userData?.access_token", router));
     }
   };
-
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+  };
   return (
     <form
       onSubmit={handleSubmit}
@@ -265,6 +274,26 @@ const PropertyForm = () => {
             className="w-full rounded border px-3 py-2"
             required
           />
+        </div>
+        <div className="mb-4">
+          <label className="text-gray-700 block">Owner's Image:</label>
+          <div style={{ display: "flex" }}>
+            <input
+              type="file"
+              name="ownerImages"
+              onChange={handleFileChange}
+              className="w-full rounded border px-3 py-2"
+              style={{ height: "45px" }}
+            />
+            {formData?.ownerImages && (
+              <img
+                src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/images/${formData?.ownerImages}`}
+                width="100"
+                height="100"
+                alt="existing"
+              />
+            )}
+          </div>
         </div>
         <div className="mb-4">
           <label className="text-gray-700 block">Phone Number:</label>
@@ -478,6 +507,9 @@ const PropertyForm = () => {
             onChange={handleChange}
             className="w-full rounded border px-3 py-2"
           />
+          <em>
+            If you want to use multiple YouTube links, separate them with commas
+          </em>
         </div>
       </div>
 
@@ -540,11 +572,41 @@ const PropertyForm = () => {
             required
           />
         </div>
-        <div className="mb-4 md:col-span-3">
+        {/* <div className="mb-4 md:col-span-3">
           <label className="text-gray-700 block">Social Media Handles:</label>
           <textarea
             name="socialMediaHandles"
             value={formData.socialMediaHandles}
+            onChange={handleChange}
+            className="w-full rounded border px-3 py-2"
+          />
+        </div> */}
+        <div className="mb-4 md:col-span-3">
+          <label className="text-gray-700 block">Instagram Link:</label>
+          <input
+            type="text"
+            name="instagramLink"
+            value={formData.instagramLink}
+            onChange={handleChange}
+            className="w-full rounded border px-3 py-2"
+          />
+        </div>
+        <div className="mb-4 md:col-span-3">
+          <label className="text-gray-700 block">Facebook Link:</label>
+          <input
+            type="text"
+            name="facebookLink"
+            value={formData.facebookLink}
+            onChange={handleChange}
+            className="w-full rounded border px-3 py-2"
+          />
+        </div>
+        <div className="mb-4 md:col-span-3">
+          <label className="text-gray-700 block">Youtube channel Link:</label>
+          <input
+            type="text"
+            name="youtubeChannelLink"
+            value={formData.youtubeChannelLink}
             onChange={handleChange}
             className="w-full rounded border px-3 py-2"
           />
